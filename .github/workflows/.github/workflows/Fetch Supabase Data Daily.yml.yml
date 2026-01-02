@@ -1,0 +1,34 @@
+name: Fetch Supabase Every 6h16m
+
+on:
+  schedule:
+    - cron: "6 0,6,12,18 * * *"  # 每天 UTC 0:16,6:16,12:16,18:16
+  workflow_dispatch:              # 可手動觸發
+
+jobs:
+  fetch_supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Show UTC time
+        run: date -u
+
+      - name: Fetch data from Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          curl -s -X GET "$SUPABASE_URL/rest/v1/subscription?select=*" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Accept: application/json" \
+            -o data.json
+
+      - name: Show fetched data
+        run: cat data.json
+
+      - name: Commit data
+        run: |
